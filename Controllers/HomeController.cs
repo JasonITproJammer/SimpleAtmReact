@@ -7,7 +7,9 @@ using SimpleAtmReact.Domain;
 
 namespace SimpleAtmReact.Controllers
 {
-    public class HomeController : Controller
+    [ApiController]
+    [Route("[controller]")]
+    public class HomeController : ControllerBase
     {
         private readonly IInventory _atmRepository;
 
@@ -16,97 +18,43 @@ namespace SimpleAtmReact.Controllers
             _atmRepository = atmRepository;
         }
 
-        public IActionResult Index()
+        [HttpGet]
+        public IEnumerable<Inventory> CurrentBalance()
         {
-            return View();
+            return GetCurrentBalance();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpGet]
+        public IEnumerable<Inventory> DenominationBalance(int[] denominations)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            List<Inventory> list = new List<Inventory>();
+            foreach (var d in denominations)
+            {
+                list.Add(_atmRepository.DenominationBalance(d));
+            }
+            return list;
+
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken()]
-        public IActionResult CurrentBalance()
+        [HttpPut]
+        public IEnumerable<Inventory> Withdraw(int withdrawalAmount)
         {
-            var model = new AtmViewModel();
-            try
-            {
-                model.InventoryList = _atmRepository.Balance;
-            }
-            catch (Exception ex)
-            {
-                ViewBag.Error = true;
-                ViewBag.ErrorMessage = ex.Message;
-            }
-            return PartialView("_Balance",model);
+            _atmRepository.Withdraw(withdrawalAmount);
+            return GetCurrentBalance();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken()]
-        public IActionResult DenominationBalance(AtmViewModel model)
+        [HttpPut]
+        public IEnumerable<Inventory> Restock()
         {
-            try
-            {
-                List<Inventory> list = new List<Inventory>();
-                foreach (var d in model.Denomination)
-                {
-                    list.Add(_atmRepository.DenominationBalance(d)); 
-                }
-                model.InventoryList = list;
-            }
-            catch (Exception ex)
-            {
-                ViewBag.Error = true;
-                ViewBag.ErrorMessage = ex.Message;
-            }
-            return PartialView("_Balance", model);
+            _atmRepository.Restock();
+            return GetCurrentBalance();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken()]
-        public IActionResult Withdraw(AtmViewModel model)
+        private IEnumerable<Inventory> GetCurrentBalance()
         {
-            try
-            {
-                _atmRepository.Withdraw(model.WithdrawalAmount);
-            }
-            catch (Exception ex)
-            {
-                ViewBag.Error = true;
-                ViewBag.ErrorMessage += ex.Message;
-            }
-
-            try
-            {
-                model.InventoryList = _atmRepository.Balance;
-            }
-            catch (Exception ex)
-            {
-                ViewBag.Error = true;
-                ViewBag.ErrorMessage += ex.Message;
-            }
-
-            return PartialView("_Balance", model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken()]
-        public IActionResult Restock(AtmViewModel model)
-        {
-            try
-            {
-                _atmRepository.Restock();
-                model.InventoryList = _atmRepository.Balance;
-            }
-            catch (Exception ex)
-            {
-                ViewBag.Error = true;
-                ViewBag.ErrorMessage = ex.Message;
-            }
-            return PartialView("_Balance", model);
+            _ = new List<Inventory>();
+            IEnumerable<Inventory> list = _atmRepository.Balance;
+            return list;
         }
     }
 }
