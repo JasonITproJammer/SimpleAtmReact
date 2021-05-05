@@ -1,9 +1,16 @@
 ﻿import React, { Component } from 'react';
 
 function AtmSubmitButton(props) {
+    function submitAction() {
+        console.log("submitAction = " + props.category);
+        if (props.category === "B") {
+            //https://www.youtube.com/watch?v=-N7auOijZts
+        }
+    }
+
     return (
         <div className="pt-2 pb-2">
-            <button id="btnSubmit" className="btn btn-primary">Submit</button>
+            <button id="btnSubmit" className="btn btn-primary" onClick={submitAction}>Submit</button>
         </div>
     );
 }
@@ -11,7 +18,7 @@ function AtmSubmitButton(props) {
 function AtmDenomsSelect() {
     return (
         <div>
-            <select multiple size="6" id="ddlDenoms" class="form-control w-100 h-100"
+            <select multiple size="6" id="ddlDenoms" className="form-control w-100 h-100"
                 data-toggle="tooltip" data-placement="right"
                 title="Hold CTRL to select more than one">
                 <option value="100">$100</option>
@@ -28,7 +35,7 @@ function AtmDenomsSelect() {
 function AtmWithdraw() {
     return (
         <div>
-            <input type="text" class="form-control text-center w-100" id="numWithdraw" />
+            <input type="text" className="form-control text-center w-100" id="numWithdraw" />
         </div>
     );
 }
@@ -70,7 +77,7 @@ export class AtmAction extends Component {
                 <div>
                     <AtmActionSelect category={this.state.category} handleChange={this.handleChange} />
                     <AtmWithdraw />
-                    <AtmSubmitButton />
+                    <AtmSubmitButton category={this.state.category} />
                 </div>
             );
         }
@@ -79,7 +86,7 @@ export class AtmAction extends Component {
                 <div>
                     <AtmActionSelect category={this.state.category} handleChange={this.handleChange} />
                     <AtmDenomsSelect />
-                    <AtmSubmitButton />
+                    <AtmSubmitButton category={this.state.category} />
                 </div>
             );
         }
@@ -87,7 +94,7 @@ export class AtmAction extends Component {
             return (
                 <div>
                     <AtmActionSelect category={this.state.category} handleChange={this.handleChange} />
-                    <AtmSubmitButton />
+                    <AtmSubmitButton category={this.state.category} />
                 </div>
             );
         }
