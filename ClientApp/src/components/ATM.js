@@ -1,6 +1,5 @@
 ﻿import React, { Component } from 'react';
 import { AtmAction } from './AtmAction';
-import { AtmSubmit } from './AtmSubmit';
 import { AtmBalance } from './AtmBalance';
 
 export class ATM extends Component {
@@ -11,7 +10,6 @@ export class ATM extends Component {
             <div className="row">
                 <div className="col-md-6">
                     <AtmAction />
-                    <AtmSubmit />
                 </div>
                 <div className="col-md-6">
                     <AtmBalance />

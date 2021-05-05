@@ -1,30 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SimpleAtmReact.Models;
 using SimpleAtmReact.Domain;
 
 namespace SimpleAtmReact.Controllers
 {
-    [ApiController]
     [Route("[controller]")]
-    public class HomeController : ControllerBase
+    [ApiController]
+    public class AtmController : ControllerBase
     {
         private readonly IInventory _atmRepository;
 
-        public HomeController(IInventory atmRepository)
+        public AtmController(IInventory atmRepository)
         {
             _atmRepository = atmRepository;
         }
 
         [HttpGet]
+        [Route("CurrentBalance")]
         public IEnumerable<Inventory> CurrentBalance()
         {
-            return GetCurrentBalance();
+            return _atmRepository.Balance;
         }
 
         [HttpGet]
+        [Route("DenominationBalance/{denominations?}")]
         public IEnumerable<Inventory> DenominationBalance(int[] denominations)
         {
             List<Inventory> list = new List<Inventory>();
@@ -37,24 +41,19 @@ namespace SimpleAtmReact.Controllers
         }
 
         [HttpPut]
+        [Route("Withdraw/{withdrawalAmount?}")]
         public IEnumerable<Inventory> Withdraw(int withdrawalAmount)
         {
             _atmRepository.Withdraw(withdrawalAmount);
-            return GetCurrentBalance();
+            return _atmRepository.Balance;
         }
 
         [HttpPut]
+        [Route("Restock")]
         public IEnumerable<Inventory> Restock()
         {
             _atmRepository.Restock();
-            return GetCurrentBalance();
-        }
-
-        private IEnumerable<Inventory> GetCurrentBalance()
-        {
-            _ = new List<Inventory>();
-            IEnumerable<Inventory> list = _atmRepository.Balance;
-            return list;
+            return _atmRepository.Balance;
         }
     }
 }
