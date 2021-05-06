@@ -9,7 +9,18 @@ export class AtmBalance extends Component {
     }
 
     componentDidMount() {
-        this.getCurrentBalance();
+        if (this.props.category === "I") {
+            this.getDenominationBalance();
+        }
+        else if (this.props.category === "W") {
+            this.postWithdraw();
+        }
+        else if (this.props.category === "R") {
+            this.postRestock();
+        }
+        else {
+            this.getCurrentBalance();
+        }
     }
 
     static renderBalanceTable(balances) {
@@ -47,6 +58,26 @@ export class AtmBalance extends Component {
 
     async getCurrentBalance() {
         const response = await fetch('atm/currentbalance');
+        const data = await response.json();
+        this.setState({ balances: data, loading: false });
+    }
+
+    async getDenominationBalance() {
+        const encodedValue = encodeURIComponent(this.props.selectedOptions);
+        const response = await fetch('atm/denominationbalance?denoms=' + encodedValue);
+        const data = await response.json();
+        this.setState({ balances: data, loading: false });
+    }
+
+    async postWithdraw() {
+        const encodedValue = encodeURIComponent(this.props.withdrawalAmount);
+        const response = await fetch('atm/Withdraw?withdrawalAmount=' + encodedValue, { method: 'POST' });
+        const data = await response.json();
+        this.setState({ balances: data, loading: false });
+    }
+
+    async postRestock() {
+        const response = await fetch('atm/Restock', { method: 'POST' });
         const data = await response.json();
         this.setState({ balances: data, loading: false });
     }

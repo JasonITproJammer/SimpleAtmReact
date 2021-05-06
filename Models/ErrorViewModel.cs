@@ -1,5 +1,3 @@
-using System;
-
 namespace SimpleAtmReact.Models
 {
     public class ErrorViewModel

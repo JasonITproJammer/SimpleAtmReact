@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SimpleAtmReact.Models;
 using SimpleAtmReact.Domain;
+using Microsoft.Extensions.Logging;
 
 namespace SimpleAtmReact.Controllers
 {
@@ -14,46 +13,82 @@ namespace SimpleAtmReact.Controllers
     public class AtmController : ControllerBase
     {
         private readonly IInventory _atmRepository;
+        private readonly ILogger<AtmController> _logger;
 
-        public AtmController(IInventory atmRepository)
+        public AtmController(IInventory atmRepository, ILogger<AtmController> logger)
         {
             _atmRepository = atmRepository;
+            _logger = logger;
         }
 
         [HttpGet]
         [Route("CurrentBalance")]
         public IEnumerable<Inventory> CurrentBalance()
         {
-            return _atmRepository.Balance;
+            var list = new List<Inventory>();
+            try
+            {
+                list = _atmRepository.Balance.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex.Message);
+            }
+            return list;
         }
 
         [HttpGet]
-        [Route("DenominationBalance/{denominations?}")]
-        public IEnumerable<Inventory> DenominationBalance(int[] denominations)
+        [Route("DenominationBalance")]
+        public IEnumerable<Inventory> DenominationBalance([FromQuery] string denoms = null)
         {
-            List<Inventory> list = new List<Inventory>();
-            foreach (var d in denominations)
+            var list = new List<Inventory>();
+            try
             {
-                list.Add(_atmRepository.DenominationBalance(d));
+                int[] denominations = denoms.Split(',').Select(n => Convert.ToInt32(n)).ToArray();
+                foreach (var d in denominations)
+                {
+                    list.Add(_atmRepository.DenominationBalance(d));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex.Message);
             }
             return list;
-
         }
 
-        [HttpPut]
-        [Route("Withdraw/{withdrawalAmount?}")]
-        public IEnumerable<Inventory> Withdraw(int withdrawalAmount)
+        [HttpPost]
+        [Route("Withdraw")]
+        public IEnumerable<Inventory> Withdraw([FromQuery] string withdrawalAmount)
         {
-            _atmRepository.Withdraw(withdrawalAmount);
-            return _atmRepository.Balance;
+            var list = new List<Inventory>();
+            try
+            {
+                _atmRepository.Withdraw(Convert.ToInt32(withdrawalAmount));
+                list = _atmRepository.Balance.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex.Message);
+            }
+            return list;
         }
 
-        [HttpPut]
+        [HttpPost]
         [Route("Restock")]
         public IEnumerable<Inventory> Restock()
         {
-            _atmRepository.Restock();
-            return _atmRepository.Balance;
+            var list = new List<Inventory>();
+            try
+            {
+                _atmRepository.Restock();
+                list = _atmRepository.Balance.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex.Message);
+            }
+            return list;
         }
     }
 }
