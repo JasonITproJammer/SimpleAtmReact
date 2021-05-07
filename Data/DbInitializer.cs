@@ -9,7 +9,7 @@ namespace SimpleAtmReact.Data
         {
             context.Database.EnsureCreated();
 
-            // Look for any students.
+            // Look for any records
             if (context.Inventories.Any())
             {
                 return;   // DB has been seeded

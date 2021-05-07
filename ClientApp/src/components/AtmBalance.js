@@ -1,11 +1,24 @@
 ﻿import React, { Component } from 'react';
 
+function ErrorMessage(props) {
+    return (
+        <div className="alert alert-danger">
+            {props.errMessage}
+        </div>
+    );
+}
+
 export class AtmBalance extends Component {
     static displayName = AtmBalance.name;
 
     constructor(props) {
         super(props);
-        this.state = { balances: [], loading: true };
+        this.state = {
+            balances: [],
+            loading: true,
+            errMsg: '',
+            isError: false
+        };
     }
 
     componentDidMount() {
@@ -45,12 +58,17 @@ export class AtmBalance extends Component {
     }
 
     render() {
+        let errorMessage = this.state.isError
+            ? <ErrorMessage errMessage={this.state.errMsg} />
+            : '';
+
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
             : AtmBalance.renderBalanceTable(this.state.balances);
 
         return (
             <div>
+                {errorMessage}
                 {contents}
             </div>
         );
@@ -58,27 +76,51 @@ export class AtmBalance extends Component {
 
     async getCurrentBalance() {
         const response = await fetch('atm/currentbalance');
-        const data = await response.json();
-        this.setState({ balances: data, loading: false });
+        if (response.ok) {
+            const data = await response.json();
+            this.setState({ balances: data, loading: false, isError: false });
+        }
+        else {
+            const err = await response.json();
+            this.setState({ balances: [], loading: false, isError: true, errMsg: err.errMessage });
+        }
     }
 
     async getDenominationBalance() {
         const encodedValue = encodeURIComponent(this.props.selectedOptions);
         const response = await fetch('atm/denominationbalance?denoms=' + encodedValue);
-        const data = await response.json();
-        this.setState({ balances: data, loading: false });
+        if (response.ok) {
+            const data = await response.json();
+            this.setState({ balances: data, loading: false, isError: false });
+        }
+        else {
+            const err = await response.json();
+            this.setState({ balances: [], loading: false, isError: true, errMsg: err.errMessage });
+        }
     }
 
     async postWithdraw() {
         const encodedValue = encodeURIComponent(this.props.withdrawalAmount);
         const response = await fetch('atm/Withdraw?withdrawalAmount=' + encodedValue, { method: 'POST' });
-        const data = await response.json();
-        this.setState({ balances: data, loading: false });
+        if (response.ok) {
+            const data = await response.json();
+            this.setState({ balances: data, loading: false, isError: false });
+        }
+        else {
+            const err = await response.json();
+            this.setState({ balances: [], loading: false, isError: true, errMsg: err.errMessage });
+        }
     }
 
     async postRestock() {
         const response = await fetch('atm/Restock', { method: 'POST' });
-        const data = await response.json();
-        this.setState({ balances: data, loading: false });
+        if (response.ok) {
+            const data = await response.json();
+            this.setState({ balances: data, loading: false, isError: false });
+        }
+        else {
+            const err = await response.json();
+            this.setState({ balances: [], loading: false, isError: true, errMsg: err.errMessage });
+        }
     }
 }
